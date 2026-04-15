@@ -1,97 +1,121 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Naruto Character Guesser</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Naruto Character Guesser</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <div class="container">
+            <header class="app-header">
+                <h1 class="app-title">Naruto Character Guesser</h1>
+                <p class="app-subtitle">Tebak karakter berdasarkan gambar!</p>
+            </header>
 
-  <div class="container">
+            <div class="scoreboard">
+                <div class="score-card">
+                    <span class="score-label">Score</span>
+                    <span class="score-val" id="score">0</span>
+                </div>
+                <div class="score-card">
+                    <span class="score-label">Streak</span>
+                    <span class="score-val" id="streak">0</span>
+                </div>
+                <div class="score-card">
+                    <span class="score-label">Round</span>
+                    <span class="score-val" id="round">1</span>
+                </div>
+                <div class="score-card">
+                    <span class="score-label">Sisa</span>
+                    <span class="score-val" id="attempts-left">5</span>
+                </div>
+            </div>
 
-    <header class="app-header">
-      <h1 class="app-title">Naruto Character Guesser</h1>
-      <p class="app-subtitle">Tebak karakter berdasarkan gambar!</p>
-    </header>
+            <div id="loading-screen" class="loading-screen">
+                <div class="spinner"></div>
+                <p>Memuat data karakter...</p>
+            </div>
 
-    <div class="scoreboard">
-      <div class="score-card">
-        <span class="score-label">Score</span>
-        <span class="score-val" id="score">0</span>
-      </div>
-      <div class="score-card">
-        <span class="score-label">Streak</span>
-        <span class="score-val" id="streak">0</span>
-      </div>
-      <div class="score-card">
-        <span class="score-label">Round</span>
-        <span class="score-val" id="round">1</span>
-      </div>
-      <div class="score-card">
-        <span class="score-label">Sisa</span>
-        <span class="score-val" id="attempts-left">5</span>
-      </div>
-    </div>
+            <div id="error-screen" class="error-screen" style="display: none">
+                <div class="error-icon">!</div>
+                <p id="error-msg">Gagal memuat data.</p>
+                <button id="retry-btn" onclick="initGame()">Coba Lagi</button>
+            </div>
 
-    <div id="loading-screen" class="loading-screen">
-      <div class="spinner"></div>
-      <p>Memuat data karakter...</p>
-    </div>
+            <div id="game-area" class="game-area" style="display: none">
+                <div class="image-card">
+                    <div class="image-wrap" id="image-wrap">
+                        <img id="char-img" src="" alt="Siapa karakter ini?" />
+                    </div>
+                    <p class="image-hint">Siapa karakter ini?</p>
+                </div>
 
-    <div id="error-screen" class="error-screen" style="display:none">
-      <div class="error-icon">!</div>
-      <p id="error-msg">Gagal memuat data.</p>
-      <button id="retry-btn" onclick="initGame()">Coba Lagi</button>
-    </div>
+                <div class="guess-card" id="guess-section">
+                    <div class="input-group">
+                        <div class="autocomplete-wrap">
+                            <input
+                                type="text"
+                                id="guess-input"
+                                placeholder="Ketik nama karakter..."
+                                autocomplete="off"
+                            />
+                            <ul
+                                id="suggestions"
+                                class="suggestions"
+                                style="display: none"
+                            ></ul>
+                        </div>
+                        <button id="submit-btn">Tebak</button>
+                    </div>
+                </div>
 
-    <div id="game-area" class="game-area" style="display:none">
+                <div
+                    class="feedback-card"
+                    id="feedback-card"
+                    style="display: none"
+                >
+                    <div class="feedback-msg" id="feedback-msg"></div>
+                    <div class="char-detail" id="char-detail"></div>
+                    <button id="next-btn">Karakter berikutnya &rarr;</button>
+                </div>
+            </div>
 
-      <div class="image-card">
-        <div class="image-wrap" id="image-wrap">
-          <img id="char-img" src="" alt="Siapa karakter ini?" />
+            <div
+                id="gameover-screen"
+                class="feedback-card"
+                style="display: none; text-align: center"
+            >
+                <h2 style="color: var(--text-danger); margin-bottom: 0.5rem">
+                    Permainan Berakhir!
+                </h2>
+                <div
+                    class="scoreboard"
+                    style="margin-bottom: 1.5rem; justify-content: center"
+                >
+                    <div class="score-card" style="max-width: 150px">
+                        <span class="score-label">Skor Akhir</span>
+                        <span class="score-val" id="final-score">0</span>
+                    </div>
+                </div>
+                <p
+                    id="gameover-msg"
+                    style="margin-bottom: 1.5rem; color: var(--text-secondary)"
+                ></p>
+                <button
+                    id="restart-btn"
+                    style="
+                        width: 100%;
+                        background: var(--text-primary);
+                        color: white;
+                    "
+                >
+                    Main Lagi
+                </button>
+            </div>
         </div>
-        <p class="image-hint">Siapa karakter ini?</p>
-      </div>
 
-      <div class="guess-card" id="guess-section">
-        <div class="input-group">
-          <div class="autocomplete-wrap">
-            <input
-              type="text"
-              id="guess-input"
-              placeholder="Ketik nama karakter..."
-              autocomplete="off"
-            />
-            <ul id="suggestions" class="suggestions" style="display:none"></ul>
-          </div>
-          <button id="submit-btn">Tebak</button>
-        </div>
-      </div>
-
-      <div class="feedback-card" id="feedback-card" style="display:none">
-        <div class="feedback-msg" id="feedback-msg"></div>
-        <div class="char-detail" id="char-detail"></div>
-        <button id="next-btn">Karakter berikutnya &rarr;</button>
-      </div>
-
-    </div>
-
-    <div id="gameover-screen" class="feedback-card" style="display:none; text-align: center;">
-      <h2 style="color: var(--text-danger); margin-bottom: 0.5rem;">Permainan Berakhir!</h2>
-      <div class="scoreboard" style="margin-bottom: 1.5rem; justify-content: center;">
-        <div class="score-card" style="max-width: 150px;">
-          <span class="score-label">Skor Akhir</span>
-          <span class="score-val" id="final-score">0</span>
-        </div>
-      </div>
-      <p id="gameover-msg" style="margin-bottom: 1.5rem; color: var(--text-secondary);"></p>
-      <button id="restart-btn" style="width: 100%; background: var(--text-primary); color: white;">Main Lagi</button>
-    </div>
-
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="app.js"></script>
-</body>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="app.js"></script>
+    </body>
 </html>
