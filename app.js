@@ -4,6 +4,15 @@
 
 const API_BASE = "https://dattebayo-api.onrender.com";
 const PAGES_TO_FETCH = [1, 2, 3, 4];
+const BLOCKED_IMAGE_URLS = new Set([
+  "https://static.wikia.nocookie.net/naruto/images/2/21/Profile_Jiraiya.png",
+  "https://static.wikia.nocookie.net/naruto/images/4/45/Fud%C5%8D.png",
+  "https://static.wikia.nocookie.net/naruto/images/7/7d/Crimson_Fist.png",
+  "https://static.wikia.nocookie.net/naruto/images/c/cf/Nango.png",
+  "https://static.wikia.nocookie.net/naruto/images/1/19/Akaboshi.png",
+  "https://static.wikia.nocookie.net/naruto/images/9/95/Benten.png",
+  "https://static.wikia.nocookie.net/naruto/images/0/09/Chushin.png",
+]);
 
 /* ── State ─────────────────────────────────────────────────── */
 let allCharacters = [];
@@ -87,7 +96,12 @@ async function fetchCharacters() {
     const list = r.data.characters || r.data;
     if (Array.isArray(list)) all = all.concat(list);
   });
-  return all.filter((c) => c.name && c.images?.length > 0);
+  return all.filter(
+    (c) =>
+      c.name &&
+      c.images?.length > 0 &&
+      c.images.some((url) => !BLOCKED_IMAGE_URLS.has(url)),
+  );
 }
 
 /* ── Init & Restart ────────────────────────────────────────── */
