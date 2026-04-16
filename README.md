@@ -55,7 +55,7 @@ Tidak perlu instalasi atau build tool. Cukup:
 
 ```bash
 # Clone repo
-git clone https://github.com/username/naruto-character-guesser.git
+git clone https://github.com/abiabdillahx/naruto-character-guesser.git
 
 # Masuk ke folder
 cd naruto-character-guesser
