@@ -1,7 +1,3 @@
-/* ══════════════════════════════════════════════════════════════
-   Naruto Character Guesser — SCORE FIX & GAME OVER SCREEN
-══════════════════════════════════════════════════════════════ */
-
 const API_BASE = "https://dattebayo-api.onrender.com";
 const PAGES_TO_FETCH = [1, 2, 3, 4];
 const BLOCKED_IMAGE_URLS = new Set([
