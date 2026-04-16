@@ -21,6 +21,7 @@ let attempts = 5;
 let roundOver = false;
 let isSubmitting = false;
 let usedChars = new Set();
+let activeSuggestionIndex = -1;
 
 /* ── DOM ───────────────────────────────────────────────────── */
 const $loading = document.getElementById("loading-screen");
@@ -57,7 +58,11 @@ function hide(el) {
   el.style.display = "none";
 }
 function normalize(s) {
-  return s.trim().toLowerCase();
+  return s
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 }
 function pickRandom(a) {
   return a[Math.floor(Math.random() * a.length)];
@@ -76,6 +81,24 @@ function flashImage(type) {
   $imageWrap.classList.add(
     type === "correct" ? "flash-correct" : "flash-wrong",
   );
+}
+
+function getSuggestionItems() {
+  return Array.from($suggestions.querySelectorAll("li"));
+}
+
+function setActiveSuggestion(index) {
+  const items = getSuggestionItems();
+  activeSuggestionIndex = items.length ? index : -1;
+
+  items.forEach((item, itemIndex) => {
+    item.classList.toggle("active", itemIndex === activeSuggestionIndex);
+  });
+}
+
+function closeSuggestions() {
+  hide($suggestions);
+  setActiveSuggestion(-1);
 }
 
 /* ── Fetch API ─────────────────────────────────────────────────── */
@@ -148,7 +171,7 @@ function startRound() {
 
   show($guessSection);
   hide($feedbackCard);
-  hide($suggestions);
+  closeSuggestions();
 
   $charImg.src = currentChar.images[0];
   usedChars.add(currentChar.name);
@@ -216,15 +239,16 @@ function showGameOver() {
 
 /* ── Autocomplete ─────────────────────────────────────────── */
 function updateSuggestions(val) {
+  activeSuggestionIndex = -1;
   if (!val || val.length < 2) {
-    hide($suggestions);
+    closeSuggestions();
     return;
   }
   const matches = allCharacters
     .filter((c) => normalize(c.name).includes(normalize(val)))
     .slice(0, 8);
   if (!matches.length) {
-    hide($suggestions);
+    closeSuggestions();
     return;
   }
   $suggestions.innerHTML = matches
@@ -239,14 +263,44 @@ $guessInput.addEventListener("input", () =>
 );
 
 $guessInput.addEventListener("keydown", (e) => {
+  const items = getSuggestionItems();
+
+  if (e.key === "ArrowDown") {
+    if (!items.length) return;
+    e.preventDefault();
+    const nextIndex =
+      activeSuggestionIndex < items.length - 1 ? activeSuggestionIndex + 1 : 0;
+    setActiveSuggestion(nextIndex);
+    $guessInput.value = items[nextIndex].dataset.name;
+    return;
+  }
+
+  if (e.key === "ArrowUp") {
+    if (!items.length) return;
+    e.preventDefault();
+    const nextIndex =
+      activeSuggestionIndex > 0 ? activeSuggestionIndex - 1 : items.length - 1;
+    setActiveSuggestion(nextIndex);
+    $guessInput.value = items[nextIndex].dataset.name;
+    return;
+  }
+
+  if (e.key === "Escape") {
+    closeSuggestions();
+    return;
+  }
+
   if (e.key === "Enter") {
     const active = $suggestions.querySelector("li.active");
     if (active) {
+      e.preventDefault();
       $guessInput.value = active.dataset.name;
-      hide($suggestions);
-    } else {
-      submitGuess();
+      closeSuggestions();
+      return;
     }
+
+    e.preventDefault();
+    submitGuess();
   }
 });
 
@@ -254,17 +308,24 @@ $suggestions.addEventListener("mousedown", (e) => {
   const li = e.target.closest("li");
   if (li) {
     $guessInput.value = li.dataset.name;
-    hide($suggestions);
+    closeSuggestions();
   }
 });
 
 $submitBtn.addEventListener("click", submitGuess);
+$submitBtn.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    submitGuess();
+  }
+});
 $nextBtn.addEventListener("click", () => startRound());
 $restartBtn.addEventListener("click", initGame);
 
 document.addEventListener("click", (e) => {
-  if (!$guessInput.contains(e.target) && !$suggestions.contains(e.target))
-    hide($suggestions);
+  if (!$guessInput.contains(e.target) && !$suggestions.contains(e.target)) {
+    closeSuggestions();
+  }
 });
 
 initGame();
